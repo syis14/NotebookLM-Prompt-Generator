@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NotebookLM Prompt Studio V6</title>
+  <meta name="description" content="Medical dashboard style NotebookLM prompt generator with bilingual UI, domain modes, prompt variants, and polished dashboard layout." />
+  <style>
+    :root{
+      --bg:#f4f8fc;
+      --bg-soft:#eef4fa;
+      --panel:#ffffff;
+      --panel-2:#f8fbff;
+      --text:#16324a;
+      --muted:#5f7892;
+      --line:#d7e4f0;
+      --primary:#2563eb;
+      --primary-2:#4f46e5;
+      --teal:#0f766e;
+      --green:#16a34a;
+      --amber:#d97706;
+      --red:#dc2626;
+      --shadow:0 18px 40px rgba(15, 35, 60, .08);
+      --radius-xl:24px;
+      --radius-lg:18px;
+      --radius-md:14px;
+      --radius-sm:12px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 0% 0%, rgba(37,99,235,.08), transparent 22%),
+        radial-gradient(circle at 100% 0%, rgba(15,118,110,.06), transparent 20%),
+        linear-gradient(180deg, var(--bg), var(--bg-soft));
+      min-height:100vh;
+    }
+
+    .app{
+      display:grid;
+      grid-template-columns:280px 1fr;
+      min-height:100vh;
+    }
+
+    .sidebar{
+      background:linear-gradient(180deg, #0f172a, #132238 60%, #102033);
+      color:#e7eefc;
+      padding:20px 18px;
+      border-right:1px solid rgba(255,255,255,.08);
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      padding:8px 6px 2px;
+    }
+
+    .brand-icon{
+      width:48px;
+      height:48px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg, var(--primary), var(--primary-2));
+      color:#fff;
+      font-size:22px;
+      font-weight:800;
+      box-shadow:0 14px 30px rgba(37,99,235,.28);
+      flex:0 0 auto;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:1.18rem;
+      line-height:1.05;
+      letter-spacing:-.03em;
+    }
+
+    .brand p{
+      margin:4px 0 0;
+      font-size:.84rem;
+      color:#b9cae8;
+      line-height:1.4;
+    }
+
+    .sidebar-section-title{
+      margin:0 0 10px;
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:#8ea7cf;
+    }
+
+    .nav-group{
+      display:grid;
+      gap:10px;
+    }
+
+    .nav-btn{
+      width:100%;
+      text-align:left;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      color:#eaf1ff;
+      padding:12px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .nav-btn:hover, .nav-btn.active{
+      background:linear-gradient(135deg, rgba(37,99,235,.36), rgba(79,70,229,.28));
+      border-color:rgba(145,180,255,.32);
+    }
+
+    .sidebar-actions{
+      display:grid;
+      gap:10px;
+      margin-top:4px;
+    }
+
+    .sidebar .btn{
+      width:100%;
+    }
+
+    .sidebar-credit{
+      margin-top:auto;
+      padding:14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.05);
+      border:1px dashed rgba(255,255,255,.12);
+      color:#b9cae8;
+      font-size:.86rem;
+      line-height:1.5;
+    }
+
+    .main{
+      padding:20px;
+      display:grid;
+      gap:16px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .topbar h2{
+      margin:0;
+      font-size:1.55rem;
+      letter-spacing:-.04em;
+      line-height:1.05;
+    }
+
+    .topbar p{
+      margin:6px 0 0;
+      color:var(--muted);
+      line-height:1.55;
+      max-width:72ch;
+    }
+
+    .top-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn, input, select, textarea{
+      font:inherit;
+    }
+
+    .btn{
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.2s ease;
+      box-shadow:0 1px 0 rgba(0,0,0,.02);
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{
+      border:none;
+      background:linear-gradient(135deg, var(--primary), var(--primary-2));
+      color:#fff;
+      box-shadow:0 12px 28px rgba(37,99,235,.18);
+    }
+    .btn.success{
+      background:#e8fff7;
+      color:#0f766e;
+      border-color:#bceadf;
+    }
+    .btn.soft{
+      background:var(--panel-2);
+    }
+
+    .dashboard{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow);
+    }
+
+    .hero{
+      padding:22px;
+      background:
+        linear-gradient(135deg, rgba(37,99,235,.06), rgba(15,118,110,.05)),
+        var(--panel);
+    }
+
+    .hero h3{
+      margin:0 0 10px;
+      font-size:1.4rem;
+      line-height:1.1;
+      letter-spacing:-.03em;
+      max-width:20ch;
+    }
+
+    .hero p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.6;
+      max-width:72ch;
+    }
+
+    .metric-grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .metric{
+      padding:14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:var(--panel-2);
+    }
+
+    .metric strong{
+      display:block;
+      margin-bottom:6px;
+      font-size:.98rem;
+    }
+
+    .metric span{
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.45;
+    }
+
+    .insight{
+      padding:18px;
+      display:grid;
+      gap:12px;
+    }
+
+    .insight h3{
+      margin:0;
+      font-size:1rem;
+    }
+
+    .insight-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .insight-item{
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:var(--panel-2);
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+    }
+
+    .insight-badge{
+      min-width:30px;
+      height:30px;
+      border-radius:10px;
+      display:grid;
+      place-items:center;
+      color:#fff;
+      font-size:.8rem;
+      font-weight:700;
+    }
+
+    .b1{background:linear-gradient(135deg, var(--primary), var(--primary-2))}
+    .b2{background:linear-gradient(135deg, var(--teal), #14b8a6)}
+    .b3{background:linear-gradient(135deg, var(--amber), #f59e0b)}
+
+    .workspace{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    .panel{
+      padding:18px;
+    }
+
+    .panel-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .panel-head h3{
+      margin:0;
+      font-size:1rem;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:.92rem;
+      line-height:1.5;
+      margin-top:4px;
+      max-width:65ch;
+    }
+
+    .section-label{
+      margin:0 0 10px;
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:var(--muted);
+    }
+
+    .cards{
+      display:grid;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .format-grid{grid-template-columns:repeat(3,1fr)}
+    .domain-grid{grid-template-columns:repeat(5,1fr)}
+
+    .select-card{
+      border:1px solid var(--line);
+      background:var(--panel-2);
+      border-radius:18px;
+      padding:16px;
+      min-height:102px;
+      cursor:pointer;
+      transition:.2s ease;
+      text-align:left;
+    }
+
+    .select-card:hover{transform:translateY(-2px)}
+    .select-card.active{
+      border-color:#bcd2ff;
+      background:linear-gradient(135deg, rgba(37,99,235,.12), rgba(79,70,229,.10));
+      box-shadow:inset 0 0 0 1px rgba(37,99,235,.06);
+    }
+
+    .select-card strong{
+      display:block;
+      margin-bottom:6px;
+      font-size:.98rem;
+    }
+
+    .select-card span{
+      color:var(--muted);
+      font-size:.88rem;
+      line-height:1.45;
+    }
+
+    .field-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+    }
+
+    .field.full{grid-column:1/-1}
+
+    label{
+      color:var(--muted);
+      font-size:.9rem;
+    }
+
+    input[type="text"], input[type="number"], select, textarea{
+      width:100%;
+      border:1px solid var(--line);
+      background:var(--panel-2);
+      color:var(--text);
+      border-radius:14px;
+      padding:12px 14px;
+      outline:none;
+      transition:.2s ease;
+    }
+
+    textarea{
+      min-height:116px;
+      resize:vertical;
+      line-height:1.55;
+    }
+
+    input:focus, select:focus, textarea:focus{
+      border-color:#a8c5ff;
+      box-shadow:0 0 0 4px rgba(37,99,235,.08);
+    }
+
+    .toggle-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .check{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:var(--panel-2);
+    }
+
+    .check input{width:auto}
+
+    .helper{
+      margin-top:14px;
+      padding:14px 16px;
+      border-radius:16px;
+      background:#fff8ed;
+      border:1px solid #f4d8ad;
+      color:#8a5a15;
+      font-size:.92rem;
+      line-height:1.5;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    .output-tabs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .tab{
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:var(--panel-2);
+      cursor:pointer;
+    }
+
+    .tab.active{
+      border-color:#bcd2ff;
+      background:linear-gradient(135deg, rgba(37,99,235,.12), rgba(79,70,229,.10));
+    }
+
+    .output{
+      min-height:560px;
+      border:1px solid var(--line);
+      background:#fbfdff;
+      border-radius:18px;
+      padding:18px;
+      white-space:pre-wrap;
+      line-height:1.68;
+      overflow:auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:.94rem;
+      color:#1b2a3f;
+    }
+
+    .stats{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+    }
+
+    .stat{
+      border:1px solid var(--line);
+      background:var(--panel-2);
+      border-radius:14px;
+      padding:14px;
+    }
+
+    .stat strong{
+      display:block;
+      margin-bottom:6px;
+      font-size:1rem;
+    }
+
+    .stat span{
+      color:var(--muted);
+      font-size:.88rem;
+    }
+
+    .footer{
+      text-align:center;
+      color:var(--muted);
+      font-size:.92rem;
+      margin-top:4px;
+    }
+
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      background:#102033;
+      color:#fff;
+      padding:12px 14px;
+      border-radius:12px;
+      box-shadow:var(--shadow);
+      opacity:0;
+      transform:translateY(10px);
+      transition:.25s ease;
+      pointer-events:none;
+      z-index:9999;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    @media (max-width: 1280px){
+      .dashboard, .workspace{grid-template-columns:1fr}
+      .domain-grid{grid-template-columns:repeat(3,1fr)}
+    }
+
+    @media (max-width: 980px){
+      .app{grid-template-columns:1fr}
+      .sidebar{
+        border-right:none;
+        border-bottom:1px solid rgba(255,255,255,.08);
+      }
+      .main{padding:14px}
+      .format-grid, .field-grid, .toggle-grid, .metric-grid, .stats{grid-template-columns:1fr}
+      .domain-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">N</div>
+        <div>
+          <h1 id="sideTitle">Prompt Studio V6</h1>
+          <p id="sideSub">Medical dashboard style</p>
+        </div>
+      </div>
+
+      <div>
+        <p class="sidebar-section-title" id="presetLabel">Quick presets</p>
+        <div class="nav-group" id="presetGroup"></div>
+      </div>
+
+      <div>
+        <p class="sidebar-section-title" id="toolLabel">Tools</p>
+        <div class="sidebar-actions">
+          <button class="btn soft" id="uiToggle">BM UI</button>
+          <button class="btn soft" id="clearBtn">Clear</button>
+          <button class="btn primary" id="demoBtn">Load demo</button>
+        </div>
+      </div>
+
+      <div class="sidebar-credit">by Dr.Mohd Syis Zulkipli (drsyizz@gmail.com)</div>
+    </aside>
+
+    <main class="main">
+      <section class="topbar">
+        <div>
+          <h2 id="appTitle">NotebookLM Prompt Studio</h2>
+          <p id="appSubtitle">A cleaner medical dashboard style interface for building NotebookLM prompts for general, creative, clinical, radiological, and public health workflows.</p>
+        </div>
+        <div class="top-actions">
+          <button class="btn primary" id="generateBtn">Generate prompt</button>
+          <button class="btn" id="copyBtnTop">Copy active prompt</button>
+        </div>
+      </section>
+
+      <section class="dashboard">
+        <div class="card hero">
+          <h3 id="heroTitle">Built for real teaching, reporting, and health communication workflows.</h3>
+          <p id="heroText">Use one interface for public health briefs, radiology teaching, clinical explanations, creative educational content, or general NotebookLM summaries.</p>
+
+          <div class="metric-grid">
+            <div class="metric">
+              <strong id="metric1t">Format-first</strong>
+              <span id="metric1d">Choose infographic, slides, summary, brief, FAQ, or teaching notes first.</span>
+            </div>
+            <div class="metric">
+              <strong id="metric2t">Domain-aware</strong>
+              <span id="metric2d">Switch logic between general, creative, clinical, radiological, and public health modes.</span>
+            </div>
+            <div class="metric">
+              <strong id="metric3t">Prompt variants</strong>
+              <span id="metric3d">Get Standard, Detailed, and Strict versions instantly.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card insight">
+          <h3 id="insightTitle">Recommended use</h3>
+          <div class="insight-list">
+            <div class="insight-item">
+              <div class="insight-badge b1">1</div>
+              <div>
+                <strong id="insight1t">Clinical teaching</strong><br>
+                <span id="insight1d">Use slide deck or teaching notes with Clinical mode for practical bedside topics.</span>
+              </div>
+            </div>
+            <div class="insight-item">
+              <div class="insight-badge b2">2</div>
+              <div>
+                <strong id="insight2t">Radiology teaching</strong><br>
+                <span id="insight2d">Use teaching notes or summary with Radiological mode for findings, pitfalls, and differentials.</span>
+              </div>
+            </div>
+            <div class="insight-item">
+              <div class="insight-badge b3">3</div>
+              <div>
+                <strong id="insight3t">Public health brief</strong><br>
+                <span id="insight3d">Use brief or infographic with Public Health mode for trend, implication, and action messaging.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="card panel">
+          <div class="panel-head">
+            <div>
+              <h3 id="builderTitle">Prompt builder</h3>
+              <div class="sub" id="builderSub">Select the output format and domain first, then fine-tune the content style, audience, and behaviour.</div>
+            </div>
+          </div>
+
+          <p class="section-label" id="formatTitle">Output format</p>
+          <div class="cards format-grid" id="formatGrid"></div>
+
+          <p class="section-label" id="domainTitle">Domain mode</p>
+          <div class="cards domain-grid" id="domainGrid"></div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="language" id="lblLanguage">Output language</label>
+              <select id="language"></select>
+            </div>
+            <div class="field">
+              <label for="promptMode" id="lblPromptMode">Prompt mode</label>
+              <select id="promptMode"></select>
+            </div>
+
+            <div class="field">
+              <label for="franchise" id="lblFranchise">Franchise / style</label>
+              <select id="franchise"></select>
+            </div>
+            <div class="field">
+              <label for="theme" id="lblTheme">Theme</label>
+              <select id="theme"></select>
+            </div>
+
+            <div class="field">
+              <label for="font" id="lblFont">Font style</label>
+              <select id="font"></select>
+            </div>
+            <div class="field">
+              <label for="colour" id="lblColour">Colour palette</label>
+              <select id="colour"></select>
+            </div>
+
+            <div class="field">
+              <label for="layoutSelect" id="lblLayout">Layout</label>
+              <select id="layoutSelect"></select>
+            </div>
+            <div class="field">
+              <label for="tone" id="lblTone">Tone</label>
+              <select id="tone"></select>
+            </div>
+
+            <div class="field">
+              <label for="audience" id="lblAudience">Target audience</label>
+              <input id="audience" type="text" placeholder="Example: trainees, clinicians, public, students" />
+            </div>
+            <div class="field">
+              <label for="sections" id="lblSections">Number of slides / panels / sections</label>
+              <input id="sections" type="number" min="1" max="40" placeholder="8" />
+            </div>
+
+            <div class="field full">
+              <label for="topic" id="lblTopic">Topic / focus</label>
+              <input id="topic" type="text" placeholder="Example: HFMD prevention in schools" />
+            </div>
+
+            <div class="field full">
+              <label for="extra" id="lblExtra">Extra instructions</label>
+              <textarea id="extra" placeholder="Example: keep it concise, practical, and ready for district review."></textarea>
+            </div>
+
+            <div class="field full">
+              <label id="enhancerTitle">Enhancers</label>
+              <div class="toggle-grid">
+                <label class="check"><input type="checkbox" id="includeExamples" checked /><span id="includeExamplesText">Include examples</span></label>
+                <label class="check"><input type="checkbox" id="includeTakeaways" checked /><span id="includeTakeawaysText">Include take-home points</span></label>
+                <label class="check"><input type="checkbox" id="includeChecklist" /><span id="includeChecklistText">Include checklist / quick reference</span></label>
+                <label class="check"><input type="checkbox" id="strictSources" /><span id="strictSourcesText">Use only uploaded sources</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="helper" id="domainHelper">Clinical mode is useful for symptom-based explanation, red flags, differential diagnosis, and management principles.</div>
+
+          <div class="actions">
+            <button class="btn primary" id="copyBtn">Copy prompt</button>
+            <button class="btn success" id="downloadBtn">Download .txt</button>
+          </div>
+        </div>
+
+        <div class="card panel">
+          <div class="panel-head">
+            <div>
+              <h3 id="outputTitle">Generated prompt</h3>
+              <div class="sub" id="outputSub">Switch between Standard, Detailed, and Strict prompt outputs below.</div>
+            </div>
+          </div>
+
+          <div class="output-tabs" id="outputTabs"></div>
+          <div class="output" id="output"></div>
+
+          <div class="stats">
+            <div class="stat"><strong id="charCount">0</strong><span id="statChars">characters</span></div>
+            <div class="stat"><strong id="wordCount">0</strong><span id="statWords">words</span></div>
+            <div class="stat"><strong id="lineCount">0</strong><span id="statLines">lines</span></div>
+            <div class="stat"><strong id="selCount">0</strong><span id="statFields">fields used</span></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer">by Dr.Mohd Syis Zulkipli (drsyizz@gmail.com)</div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">Copied to clipboard.</div>
+
+  <script>
+    const UI = {
+      en: {
+        sideTitle: "Prompt Studio V6",
+        sideSub: "Medical dashboard style",
+        presetLabel: "Quick presets",
+        toolLabel: "Tools",
+        appTitle: "NotebookLM Prompt Studio",
+        appSubtitle: "A cleaner medical dashboard style interface for building NotebookLM prompts for general, creative, clinical, radiological, and public health workflows.",
+        heroTitle: "Built for real teaching, reporting, and health communication workflows.",
+        heroText: "Use one interface for public health briefs, radiology teaching, clinical explanations, creative educational content, or general NotebookLM summaries.",
+        metric1t: "Format-first",
+        metric1d: "Choose infographic, slides, summary, brief, FAQ, or teaching notes first.",
+        metric2t: "Domain-aware",
+        metric2d: "Switch logic between general, creative, clinical, radiological, and public health modes.",
+        metric3t: "Prompt variants",
+        metric3d: "Get Standard, Detailed, and Strict versions instantly.",
+        insightTitle: "Recommended use",
+        insight1t: "Clinical teaching",
+        insight1d: "Use slide deck or teaching notes with Clinical mode for practical bedside topics.",
+        insight2t: "Radiology teaching",
+        insight2d: "Use teaching notes or summary with Radiological mode for findings, pitfalls, and differentials.",
+        insight3t: "Public health brief",
+        insight3d: "Use brief or infographic with Public Health mode for trend, implication, and action messaging.",
+        builderTitle: "Prompt builder",
+        builderSub: "Select the output format and domain first, then fine-tune the content style, audience, and behaviour.",
+        formatTitle: "Output format",
+        domainTitle: "Domain mode",
+        lblLanguage: "Output language",
+        lblPromptMode: "Prompt mode",
+        lblFranchise: "Franchise / style",
+        lblTheme: "Theme",
+        lblFont: "Font style",
+        lblColour: "Colour palette",
+        lblLayout: "Layout",
+        lblTone: "Tone",
+        lblAudience: "Target audience",
+        lblSections: "Number of slides / panels / sections",
+        lblTopic: "Topic / focus",
+        lblExtra: "Extra instructions",
+        enhancerTitle: "Enhancers",
+        includeExamplesText: "Include examples",
+        includeTakeawaysText: "Include take-home points",
+        includeChecklistText: "Include checklist / quick reference",
+        strictSourcesText: "Use only uploaded sources",
+        outputTitle: "Generated prompt",
+        outputSub: "Switch between Standard, Detailed, and Strict prompt outputs below.",
+        statChars: "characters",
+        statWords: "words",
+        statLines: "lines",
+        statFields: "fields used",
+        uiToggle: "BM UI",
+        clearBtn: "Clear",
+        demoBtn: "Load demo",
+        generateBtn: "Generate prompt",
+        copyBtn: "Copy prompt",
+        copyBtnTop: "Copy active prompt",
+        downloadBtn: "Download .txt"
+      },
+      bm: {
+        sideTitle: "Studio Prompt V6",
+        sideSub: "Gaya dashboard perubatan",
+        presetLabel: "Preset pantas",
+        toolLabel: "Alat",
+        appTitle: "Studio Prompt NotebookLM",
+        appSubtitle: "Antaramuka gaya dashboard perubatan yang lebih kemas untuk membina prompt NotebookLM bagi aliran kerja umum, kreatif, klinikal, radiologi, dan kesihatan awam.",
+        heroTitle: "Dibina untuk aliran kerja pengajaran, pelaporan, dan komunikasi kesihatan sebenar.",
+        heroText: "Gunakan satu antaramuka untuk taklimat kesihatan awam, pengajaran radiologi, penerangan klinikal, kandungan pendidikan kreatif, atau ringkasan umum NotebookLM.",
+        metric1t: "Ikut format dahulu",
+        metric1d: "Pilih infografik, slaid, ringkasan, taklimat, FAQ, atau nota pengajaran dahulu.",
+        metric2t: "Peka domain",
+        metric2d: "Tukar logik antara mod umum, kreatif, klinikal, radiologi, dan kesihatan awam.",
+        metric3t: "Varian prompt",
+        metric3d: "Dapatkan versi Standard, Terperinci, dan Ketat dengan segera.",
+        insightTitle: "Cadangan penggunaan",
+        insight1t: "Pengajaran klinikal",
+        insight1d: "Guna dek slaid atau nota pengajaran dengan mod Klinikal untuk topik bedside yang praktikal.",
+        insight2t: "Pengajaran radiologi",
+        insight2d: "Guna nota pengajaran atau ringkasan dengan mod Radiologi untuk dapatan, pitfalls, dan differential.",
+        insight3t: "Taklimat kesihatan awam",
+        insight3d: "Guna taklimat atau infografik dengan mod Kesihatan Awam untuk trend, implikasi, dan mesej tindakan.",
+        builderTitle: "Pembina prompt",
+        builderSub: "Pilih format output dan domain dahulu, kemudian haluskan gaya kandungan, audiens, dan tingkah laku prompt.",
+        formatTitle: "Format output",
+        domainTitle: "Mod domain",
+        lblLanguage: "Bahasa output",
+        lblPromptMode: "Mod prompt",
+        lblFranchise: "Franchise / gaya",
+        lblTheme: "Tema",
+        lblFont: "Gaya fon",
+        lblColour: "Palet warna",
+        lblLayout: "Susun atur",
+        lblTone: "Nada",
+        lblAudience: "Sasaran audiens",
+        lblSections: "Bilangan slaid / panel / bahagian",
+        lblTopic: "Topik / fokus",
+        lblExtra: "Arahan tambahan",
+        enhancerTitle: "Penguat",
+        includeExamplesText: "Masukkan contoh",
+        includeTakeawaysText: "Masukkan poin utama",
+        includeChecklistText: "Masukkan checklist / rujukan pantas",
+        strictSourcesText: "Guna sumber dimuat naik sahaja",
+        outputTitle: "Prompt dijana",
+        outputSub: "Tukar antara output prompt Standard, Terperinci, dan Ketat di bawah.",
+        statChars: "aksara",
+        statWords: "perkataan",
+        statLines: "baris",
+        statFields: "medan digunakan",
+        uiToggle: "English UI",
+        clearBtn: "Kosongkan",
+        demoBtn: "Muat demo",
+        generateBtn: "Jana prompt",
+        copyBtn: "Salin prompt",
+        copyBtnTop: "Salin prompt aktif",
+        downloadBtn: "Muat turun .txt"
+      }
+    };
+
+    const formatTypes = [
+      { id:"infographic", icon:"▦", en:"Infographic", bm:"Infografik", enDesc:"Short visual panels with strong hierarchy.", bmDesc:"Panel visual ringkas dengan hierarki jelas." },
+      { id:"slides", icon:"▤", en:"Slide Deck", bm:"Dek Slaid", enDesc:"Presentation-ready slides with logical flow.", bmDesc:"Slaid sedia bentang dengan aliran logik." },
+      { id:"summary", icon:"≡", en:"Summary", bm:"Ringkasan", enDesc:"Clean structured summary with key points.", bmDesc:"Ringkasan tersusun dengan poin utama." },
+      { id:"teaching", icon:"✎", en:"Teaching Notes", bm:"Nota Pengajaran", enDesc:"Educational material with teaching value.", bmDesc:"Bahan pendidikan dengan nilai pengajaran." },
+      { id:"brief", icon:"▣", en:"Brief / Report", bm:"Taklimat / Laporan", enDesc:"Professional briefing or report format.", bmDesc:"Format taklimat atau laporan profesional." },
+      { id:"faq", icon:"?", en:"FAQ / Quick Guide", bm:"FAQ / Panduan Pantas", enDesc:"Fast question-answer or quick reference style.", bmDesc:"Gaya soal jawab atau rujukan pantas." }
+    ];
+
+    const domains = [
+      { id:"general", icon:"◎", en:"General", bm:"Umum", helperEn:"General mode works well for broad explanatory topics with accessible structure and readability.", helperBm:"Mod umum sesuai untuk topik penjelasan luas dengan struktur yang mudah dibaca." },
+      { id:"creative", icon:"✦", en:"Creative", bm:"Kreatif", helperEn:"Creative mode is best for originality, mood, storytelling, metaphor, and visual flair.", helperBm:"Mod kreatif paling sesuai untuk keaslian, mood, penceritaan, metafora, dan gaya visual." },
+      { id:"clinical", icon:"✚", en:"Clinical", bm:"Klinikal", helperEn:"Clinical mode is ideal for symptoms, red flags, differential diagnosis, and management-focused teaching.", helperBm:"Mod klinikal sesuai untuk simptom, red flags, diagnosis pembezaan, dan pengajaran berfokus pengurusan." },
+      { id:"radiological", icon:"◫", en:"Radiological", bm:"Radiologi", helperEn:"Radiological mode is ideal for imaging findings, modalities, structured interpretation, and pitfalls.", helperBm:"Mod radiologi sesuai untuk dapatan imej, modality, interpretasi berstruktur, dan pitfalls." },
+      { id:"public_health", icon:"◉", en:"Public Health", bm:"Kesihatan Awam", helperEn:"Public health mode fits surveillance updates, outbreaks, prevention, and action-oriented recommendations.", helperBm:"Mod kesihatan awam sesuai untuk surveilans, wabak, pencegahan, dan cadangan tindakan." }
+    ];
+
+    const promptModes = ["Standard", "Detailed", "Strict"];
+    const data = {
+      languages: ["English", "Bahasa Melayu", "Bilingual", "中文", "Español", "日本語", "한국어", "Français", "Deutsch", "Português"],
+      franchises: ["NotebookLM Default", "Studio Ghibli", "Marvel", "DC Comics", "Star Wars", "Pixar", "Minimalist Editorial", "Apple Keynote", "National Geographic", "Medical Education", "Public Health Official"],
+      themes: ["Clean Professional", "Playful", "Futuristic", "Retro", "Elegant", "Dark Mode", "Nature", "Corporate", "Academic", "Newsroom", "Healthcare"],
+      fonts: ["Modern Sans", "Classic Serif", "Rounded Friendly", "Bold Display", "Monospace Tech", "Elegant Editorial", "Minimal Thin", "Textbook Style"],
+      colours: ["Blue Gradient", "Purple Neon", "Pastel Soft", "Monochrome", "Warm Earth", "Tropical Bright", "Healthcare Teal", "Corporate Navy", "Sunset Orange", "Forest Green"],
+      layouts: ["Balanced Grid", "Two-column", "Magazine Panels", "Timeline Flow", "Card Mosaic", "Hero + Sections", "Storyboard", "Grid Panels"],
+      tones: ["Professional", "Academic", "Friendly", "Inspirational", "Formal", "Playful", "Concise", "High-energy", "Elegant", "Confident", "Storytelling", "Instructional", "Official", "Visual-first"]
+    };
+
+    const presets = {
+      "Clinical Teaching": {
+        format:"slides", domain:"clinical", language:"English", promptMode:"Detailed", franchise:"Medical Education", theme:"Academic", font:"Textbook Style", colour:"Blue Gradient", layoutSelect:"Hero + Sections", tone:"Instructional", audience:"Medical officers and students", sections:"10", topic:"Chest pain approach in emergency setting", extra:"Make each slide concise, practical, and suitable for bedside teaching."
+      },
+      "Radiology Case": {
+        format:"teaching", domain:"radiological", language:"English", promptMode:"Detailed", franchise:"Medical Education", theme:"Healthcare", font:"Modern Sans", colour:"Healthcare Teal", layoutSelect:"Balanced Grid", tone:"Academic", audience:"Radiology trainees", sections:"8", topic:"Chest X-ray approach to pneumothorax", extra:"Structure by findings, pitfalls, differentials, and reporting pearls."
+      },
+      "Public Health Brief": {
+        format:"brief", domain:"public_health", language:"Bahasa Melayu", promptMode:"Strict", franchise:"Public Health Official", theme:"Corporate", font:"Textbook Style", colour:"Corporate Navy", layoutSelect:"Timeline Flow", tone:"Official", audience:"Pegawai kesihatan awam daerah", sections:"7", topic:"Ringkasan mingguan epidemiologi HFMD", extra:"Gunakan gaya rasmi, ringkas, dan berorientasikan tindakan."
+      },
+      "Creative Explainer": {
+        format:"infographic", domain:"creative", language:"English", promptMode:"Standard", franchise:"Studio Ghibli", theme:"Nature", font:"Rounded Friendly", colour:"Pastel Soft", layoutSelect:"Grid Panels", tone:"Storytelling", audience:"School students", sections:"6", topic:"How forests support biodiversity", extra:"Make it whimsical, visual, and easy to understand."
+      }
+    };
+
+    const fields = {
+      language: document.getElementById("language"),
+      promptMode: document.getElementById("promptMode"),
+      franchise: document.getElementById("franchise"),
+      theme: document.getElementById("theme"),
+      font: document.getElementById("font"),
+      colour: document.getElementById("colour"),
+      layoutSelect: document.getElementById("layoutSelect"),
+      tone: document.getElementById("tone"),
+      audience: document.getElementById("audience"),
+      sections: document.getElementById("sections"),
+      topic: document.getElementById("topic"),
+      extra: document.getElementById("extra"),
+      includeExamples: document.getElementById("includeExamples"),
+      includeTakeaways: document.getElementById("includeTakeaways"),
+      includeChecklist: document.getElementById("includeChecklist"),
+      strictSources: document.getElementById("strictSources")
+    };
+
+    let currentUI = "en";
+    let selectedFormat = "infographic";
+    let selectedDomain = "general";
+    let activeOutputTab = "Standard";
+    let generatedPrompts = { Standard:"", Detailed:"", Strict:"" };
+
+    const output = document.getElementById("output");
+    const toast = document.getElementById("toast");
+    const charCount = document.getElementById("charCount");
+    const wordCount = document.getElementById("wordCount");
+    const lineCount = document.getElementById("lineCount");
+    const selCount = document.getElementById("selCount");
+
+    function t(key){ return UI[currentUI][key] || key; }
+    function formatLabel(id){ const f = formatTypes.find(x=>x.id===id); return currentUI==="bm" ? f.bm : f.en; }
+    function domainLabel(id){ const d = domains.find(x=>x.id===id); return currentUI==="bm" ? d.bm : d.en; }
+
+    function populateSelect(select, items){
+      select.innerHTML = "";
+      items.forEach(item=>{
+        const opt = document.createElement("option");
+        opt.value = item;
+        opt.textContent = item;
+        select.appendChild(opt);
+      });
+    }
+
+    function setUIText(){
+      const ids = ["sideTitle","sideSub","presetLabel","toolLabel","appTitle","appSubtitle","heroTitle","heroText","metric1t","metric1d","metric2t","metric2d","metric3t","metric3d","insightTitle","insight1t","insight1d","insight2t","insight2d","insight3t","insight3d","builderTitle","builderSub","formatTitle","domainTitle","lblLanguage","lblPromptMode","lblFranchise","lblTheme","lblFont","lblColour","lblLayout","lblTone","lblAudience","lblSections","lblTopic","lblExtra","enhancerTitle","includeExamplesText","includeTakeawaysText","includeChecklistText","strictSourcesText","outputTitle","outputSub","statChars","statWords","statLines","statFields"];
+      ids.forEach(id=>{ const el = document.getElementById(id); if(el) el.textContent = t(id); });
+      document.getElementById("uiToggle").textContent = t("uiToggle");
+      document.getElementById("clearBtn").textContent = t("clearBtn");
+      document.getElementById("demoBtn").textContent = t("demoBtn");
+      document.getElementById("generateBtn").textContent = t("generateBtn");
+      document.getElementById("copyBtn").textContent = t("copyBtn");
+      document.getElementById("copyBtnTop").textContent = t("copyBtnTop");
+      document.getElementById("downloadBtn").textContent = t("downloadBtn");
+      renderFormatGrid();
+      renderDomainGrid();
+      renderTabs();
+      updateHelper();
+    }
+
+    function renderPresetGroup(){
+      const wrap = document.getElementById("presetGroup");
+      wrap.innerHTML = "";
+      Object.keys(presets).forEach((name, idx)=>{
+        const btn = document.createElement("button");
+        btn.className = "nav-btn" + (idx===0 ? " active" : "");
+        btn.type = "button";
+        btn.textContent = name;
+        btn.onclick = ()=>{
+          document.querySelectorAll(".nav-btn").forEach(x=>x.classList.remove("active"));
+          btn.classList.add("active");
+          applyPreset(name);
+        };
+        wrap.appendChild(btn);
+      });
+    }
+
+    function renderFormatGrid(){
+      const wrap = document.getElementById("formatGrid");
+      wrap.innerHTML = "";
+      formatTypes.forEach(type=>{
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = "select-card" + (type.id===selectedFormat ? " active" : "");
+        el.innerHTML = `<strong>${type.icon} ${currentUI==="bm" ? type.bm : type.en}</strong><span>${currentUI==="bm" ? type.bmDesc : type.enDesc}</span>`;
+        el.onclick = ()=>{ selectedFormat = type.id; renderFormatGrid(); generateAllPrompts(); };
+        wrap.appendChild(el);
+      });
+    }
+
+    function renderDomainGrid(){
+      const wrap = document.getElementById("domainGrid");
+      wrap.innerHTML = "";
+      domains.forEach(type=>{
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = "select-card" + (type.id===selectedDomain ? " active" : "");
+        el.innerHTML = `<strong>${type.icon} ${currentUI==="bm" ? type.bm : type.en}</strong><span>${currentUI==="bm" ? type.helperBm : type.helperEn}</span>`;
+        el.onclick = ()=>{ selectedDomain = type.id; renderDomainGrid(); updateHelper(); applyDomainDefaults(); generateAllPrompts(); };
+        wrap.appendChild(el);
+      });
+    }
+
+    function renderTabs(){
+      const wrap = document.getElementById("outputTabs");
+      wrap.innerHTML = "";
+      promptModes.forEach(mode=>{
+        const tab = document.createElement("button");
+        tab.type = "button";
+        tab.className = "tab" + (activeOutputTab===mode ? " active" : "");
+        tab.textContent = currentUI==="bm" ? (mode==="Standard" ? "Standard" : mode==="Detailed" ? "Terperinci" : "Ketat") : mode;
+        tab.onclick = ()=>{ activeOutputTab = mode; renderTabs(); renderActiveOutput(); };
+        wrap.appendChild(tab);
+      });
+    }
+
+    function updateHelper(){
+      const d = domains.find(x=>x.id===selectedDomain);
+      document.getElementById("domainHelper").textContent = currentUI==="bm" ? d.helperBm : d.helperEn;
+    }
+
+    function applyDomainDefaults(){
+      if(selectedDomain==="creative"){
+        fields.tone.value = "Storytelling";
+        fields.theme.value = "Nature";
+      } else if(selectedDomain==="clinical"){
+        fields.tone.value = "Professional";
+        fields.theme.value = "Healthcare";
+        fields.franchise.value = "Medical Education";
+      } else if(selectedDomain==="radiological"){
+        fields.tone.value = "Academic";
+        fields.theme.value = "Healthcare";
+        fields.franchise.value = "Medical Education";
+      } else if(selectedDomain==="public_health"){
+        fields.tone.value = "Official";
+        fields.theme.value = "Corporate";
+        fields.franchise.value = "Public Health Official";
+      } else {
+        fields.tone.value = "Concise";
+      }
+    }
+
+    function formatInstruction(){
+      const n = fields.sections.value.trim();
+      const countLine = n ? `- Target number of slides / panels / sections: ${n}.` : "";
+      const map = {
+        infographic: [
+          "- Structure the content into concise visual panels or sections.",
+          "- Prioritize readability, strong headings, and scan-friendly text.",
+          "- Make the result feel like a polished infographic.",
+          countLine
+        ],
+        slides: [
+          "- Organize the content slide by slide.",
+          "- Use strong slide titles and concise support points.",
+          "- Ensure logical flow from opening to conclusion.",
+          countLine
+        ],
+        summary: [
+          "- Create a structured summary with key points only.",
+          "- Keep wording concise, clear, and organized.",
+          "- Focus on clarity over decoration.",
+          countLine
+        ],
+        teaching: [
+          "- Present the content as teaching notes or educational material.",
+          "- Make explanations clear and progressive.",
+          "- Include elements that support learning and understanding.",
+          countLine
+        ],
+        brief: [
+          "- Write the content like a professional brief or report.",
+          "- Keep it concise, decision-friendly, and structured.",
+          "- Use an official or polished tone where appropriate.",
+          countLine
+        ],
+        faq: [
+          "- Present the content as a quick guide or FAQ.",
+          "- Use question-and-answer or compact reference style.",
+          "- Make it practical and easy to retrieve key information quickly.",
+          countLine
+        ]
+      };
+      return map[selectedFormat].filter(Boolean);
+    }
+
+    function domainInstruction(mode){
+      const map = {
+        general: [
+          "- Emphasize clarity, readability, and accessibility for a broad audience.",
+          "- Keep the structure logical and easy to follow."
+        ],
+        creative: [
+          "- Encourage originality, visual flair, and memorable phrasing.",
+          "- Use mood, narrative energy, or imaginative framing where appropriate."
+        ],
+        clinical: [
+          "- Prioritize factual accuracy and clinical relevance.",
+          "- Highlight symptoms, signs, differential diagnosis, red flags, and management relevance.",
+          "- Make the output practical for clinical teaching or patient care context."
+        ],
+        radiological: [
+          "- Emphasize imaging findings, modality relevance, systematic interpretation, and differential diagnosis.",
+          "- Include common pitfalls, structured reporting logic, and teaching pearls where relevant."
+        ],
+        public_health: [
+          "- Focus on population relevance, trends, implications, prevention, and action-oriented recommendations.",
+          "- Keep the messaging suitable for surveillance, outbreak response, or programme communication."
+        ]
+      };
+      const extra = [];
+      if(mode==="Detailed") extra.push("- Expand the domain-specific explanation more fully and include sub-points where useful.");
+      if(mode==="Strict") extra.push("- Be conservative and avoid speculation beyond the source material.");
+      return [...map[selectedDomain], ...extra];
+    }
+
+    function enhancerInstruction(mode){
+      const arr = [];
+      if(fields.includeExamples.checked) arr.push("- Include concrete examples or applied scenarios where helpful.");
+      if(fields.includeTakeaways.checked) arr.push("- End with concise take-home points or key messages.");
+      if(fields.includeChecklist.checked) arr.push("- Include a checklist, quick reference block, or summary box if appropriate.");
+      if(fields.strictSources.checked || mode==="Strict") arr.push("- Use only the uploaded or provided sources. Do not introduce unsupported claims.");
+      return arr;
+    }
+
+    function styleInstruction(){
+      return [
+        `- Overall franchise / aesthetic inspiration: ${fields.franchise.value}.`,
+        `- Theme: ${fields.theme.value}.`,
+        `- Font feel: ${fields.font.value}.`,
+        `- Colour palette: ${fields.colour.value}.`,
+        `- Layout style: ${fields.layoutSelect.value}.`,
+        `- Tone: ${fields.tone.value}.`
+      ];
+    }
+
+    function buildPrompt(mode){
+      const language = fields.language.value;
+      const audience = fields.audience.value.trim() || "[insert audience]";
+      const topic = fields.topic.value.trim() || "[insert topic]";
+      const extra = fields.extra.value.trim();
+      const formatName = formatLabel(selectedFormat);
+      const domainName = domainLabel(selectedDomain);
+
+      const lines = [];
+      lines.push(`Create a highly polished ${formatName.toLowerCase()} in ${language} for NotebookLM.`);
+      lines.push("");
+      lines.push(`Topic:`); lines.push(topic); lines.push("");
+      lines.push(`Target audience:`); lines.push(audience); lines.push("");
+      lines.push(`Output context:`); lines.push(`- Format: ${formatName}.`); lines.push(`- Domain: ${domainName}.`); lines.push(`- Prompt mode: ${mode}.`); lines.push("");
+      lines.push(`Styling requirements:`); styleInstruction().forEach(x=>lines.push(x)); lines.push("");
+      lines.push(`Format-specific instructions:`); formatInstruction().forEach(x=>lines.push(x)); lines.push("");
+      lines.push(`Domain-specific instructions:`); domainInstruction(mode).forEach(x=>lines.push(x)); lines.push("");
+      lines.push(`Enhancers:`); enhancerInstruction(mode).forEach(x=>lines.push(x)); if(!enhancerInstruction(mode).length) lines.push("- No extra enhancers selected."); lines.push("");
+      lines.push(`General instructions:`);
+      lines.push("- Use clear headings and strong information hierarchy.");
+      lines.push("- Keep the output attractive, polished, and easy to scan.");
+      if(mode==="Detailed"){
+        lines.push("- Add more detail, structure, and supporting explanation where useful.");
+        lines.push("- Make the result feel comprehensive without becoming bloated.");
+      } else if(mode==="Strict"){
+        lines.push("- Stay tightly grounded to the source material and avoid embellishment.");
+        lines.push("- Prefer precision, clarity, and restraint over creativity.");
+      } else {
+        lines.push("- Keep the result balanced, practical, and ready for sharing.");
+      }
+      if(extra) { lines.push(""); lines.push("Additional guidance:"); lines.push(`- ${extra}`); }
+      lines.push("");
+      lines.push("Return only the final style-ready content, not an explanation of the prompt.");
+      return lines.join("\n");
+    }
+
+    function generateAllPrompts(){
+      generatedPrompts.Standard = buildPrompt("Standard");
+      generatedPrompts.Detailed = buildPrompt("Detailed");
+      generatedPrompts.Strict = buildPrompt("Strict");
+      activeOutputTab = fields.promptMode.value || activeOutputTab;
+      renderTabs();
+      renderActiveOutput();
+    }
+
+    function renderActiveOutput(){
+      const text = generatedPrompts[activeOutputTab] || "";
+      output.textContent = text;
+      charCount.textContent = text.length.toLocaleString();
+      wordCount.textContent = (text.trim() ? text.trim().split(/\s+/).length : 0).toLocaleString();
+      lineCount.textContent = text ? text.split("\n").length.toLocaleString() : "0";
+      let used = 2;
+      Object.values(fields).forEach(el=>{
+        if(typeof el.checked === "boolean"){ if(el.checked) used += 1; }
+        else if((el.value || "").trim()) used += 1;
+      });
+      selCount.textContent = used.toLocaleString();
+    }
+
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(()=>toast.classList.remove("show"), 1800);
+    }
+
+    function copyActivePrompt(){
+      navigator.clipboard.writeText(generatedPrompts[activeOutputTab] || "").then(()=>showToast(currentUI==="bm" ? "Prompt disalin." : "Prompt copied."));
+    }
+
+    function downloadPrompt(){
+      const text = generatedPrompts[activeOutputTab] || "";
+      const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+      const a = document.createElement("a");
+      const safe = ((fields.topic.value.trim() || "notebooklm_prompt").replace(/[^\w\-]+/g, "_")).slice(0,80);
+      a.href = URL.createObjectURL(blob);
+      a.download = `${safe}_${activeOutputTab.toLowerCase()}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function applyPreset(name){
+      const p = presets[name];
+      selectedFormat = p.format;
+      selectedDomain = p.domain;
+      Object.entries(p).forEach(([k,v])=>{
+        if(fields[k]) fields[k].value = v;
+      });
+      fields.strictSources.checked = p.promptMode === "Strict";
+      renderFormatGrid();
+      renderDomainGrid();
+      updateHelper();
+      generateAllPrompts();
+    }
+
+    function clearAll(){
+      selectedFormat = "infographic";
+      selectedDomain = "general";
+      fields.language.value = "English";
+      fields.promptMode.value = "Standard";
+      fields.franchise.value = "NotebookLM Default";
+      fields.theme.value = "Clean Professional";
+      fields.font.value = "Modern Sans";
+      fields.colour.value = "Blue Gradient";
+      fields.layoutSelect.value = "Balanced Grid";
+      fields.tone.value = "Professional";
+      fields.audience.value = "";
+      fields.sections.value = "";
+      fields.topic.value = "";
+      fields.extra.value = "";
+      fields.includeExamples.checked = true;
+      fields.includeTakeaways.checked = true;
+      fields.includeChecklist.checked = false;
+      fields.strictSources.checked = false;
+      renderFormatGrid();
+      renderDomainGrid();
+      updateHelper();
+      generateAllPrompts();
+    }
+
+    function loadDemo(){
+      applyPreset("Public Health Brief");
+      showToast(currentUI==="bm" ? "Demo dimuatkan." : "Demo loaded.");
+    }
+
+    function toggleUI(){
+      currentUI = currentUI === "en" ? "bm" : "en";
+      setUIText();
+      showToast(currentUI==="bm" ? "UI Bahasa Melayu diaktifkan." : "English UI enabled.");
+    }
+
+    populateSelect(fields.language, data.languages);
+    populateSelect(fields.promptMode, promptModes);
+    populateSelect(fields.franchise, data.franchises);
+    populateSelect(fields.theme, data.themes);
+    populateSelect(fields.font, data.fonts);
+    populateSelect(fields.colour, data.colours);
+    populateSelect(fields.layoutSelect, data.layouts);
+    populateSelect(fields.tone, data.tones);
+
+    renderPresetGroup();
+    setUIText();
+
+    Object.values(fields).forEach(el=>{
+      const evt = (typeof el.checked === "boolean") ? "change" : "input";
+      el.addEventListener(evt, generateAllPrompts);
+      if(evt !== "change") el.addEventListener("change", generateAllPrompts);
+    });
+
+    document.getElementById("uiToggle").onclick = toggleUI;
+    document.getElementById("clearBtn").onclick = clearAll;
+    document.getElementById("demoBtn").onclick = loadDemo;
+    document.getElementById("generateBtn").onclick = generateAllPrompts;
+    document.getElementById("copyBtn").onclick = copyActivePrompt;
+    document.getElementById("copyBtnTop").onclick = copyActivePrompt;
+    document.getElementById("downloadBtn").onclick = downloadPrompt;
+
+    clearAll();
+  </script>
+</body>
+</html>
